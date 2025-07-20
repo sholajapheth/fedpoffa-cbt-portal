@@ -1,21 +1,16 @@
 {
   "name": "FEDPOFFA CBT Portal",
   "short_name": "FEDPOFFA CBT",
-  "description": "Federal Polytechnic of Oil and Gas, Bonny - Computer Based Testing System",
+  "description": "Federal Polytechnic Offa - Computer Based Testing System",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#6B46C1",
-  "theme_color": "#6B46C1",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
   "icons": [
     {
-      "src": "/placeholder.svg?height=192&width=192",
+      "src": "/fedpoffa-logo.jpeg",
       "sizes": "192x192",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "/placeholder.svg?height=512&width=512",
-      "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/jpeg"
     }
   ]
 }

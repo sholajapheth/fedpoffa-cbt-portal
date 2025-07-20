@@ -1,167 +1,161 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { createContext, useContext, useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/stores/auth-store";
+import {
+  useLogin,
+  useRegister,
+  useLogout,
+  useUserProfile,
+} from "@/lib/api/auth/hooks";
 
-export type UserRole = "student" | "lecturer" | "admin" | "it_admin"
+export type UserRole = "student" | "lecturer" | "admin" | "it_admin";
 
 export interface User {
-  id: string
-  name: string
-  email: string
-  role: UserRole
-  studentId?: string
-  staffId?: string
-  department?: string
-  program?: string
-  level?: string
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  studentId?: string;
+  staffId?: string;
+  department?: string;
+  program?: string;
+  level?: string;
 }
 
 interface AuthContextType {
-  user: User | null
-  login: (credentials: LoginCredentials) => Promise<void>
-  register: (data: RegisterData) => Promise<void>
-  logout: () => void
-  loading: boolean
+  user: User | null;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  register: (data: RegisterData) => Promise<void>;
+  logout: () => void;
+  loading: boolean;
 }
 
 interface LoginCredentials {
-  identifier: string // student ID or email
-  password: string
-  rememberMe?: boolean
+  identifier: string; // student ID or email
+  password: string;
+  rememberMe?: boolean;
 }
 
 interface RegisterData {
-  fullName: string
-  studentId: string
-  email: string
-  password: string
-  confirmPassword: string
+  fullName: string;
+  studentId: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  // Zustand store
+  const { user, isAuthenticated, accessToken, clearAuth } = useAuthStore();
+
+  // TanStack Query hooks
+  const loginMutation = useLogin();
+  const registerMutation = useRegister();
+  const logoutMutation = useLogout();
 
   useEffect(() => {
     // Check for existing session
-    const token = localStorage.getItem("fedpoffa_token")
-    const userData = localStorage.getItem("fedpoffa_user")
-
-    if (token && userData) {
-      try {
-        setUser(JSON.parse(userData))
-      } catch (error) {
-        localStorage.removeItem("fedpoffa_token")
-        localStorage.removeItem("fedpoffa_user")
+    if (accessToken && user) {
+      // User is authenticated, redirect to appropriate dashboard
+      if (user.role === "student") {
+        router.push("/dashboard/student");
+      } else if (user.role === "lecturer") {
+        router.push("/dashboard/lecturer");
+      } else {
+        router.push("/dashboard/admin");
       }
     }
-    setLoading(false)
-  }, [])
+    setLoading(false);
+  }, [user, accessToken, router]);
 
   const login = async (credentials: LoginCredentials) => {
-    setLoading(true)
     try {
-      // Mock API call - replace with actual FastAPI integration
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await loginMutation.mutateAsync({
+        identifier: credentials.identifier,
+        password: credentials.password,
+      });
 
-      // Mock user data based on identifier
-      const mockUser: User = credentials.identifier.includes("@")
-        ? {
-            id: "2",
-            name: "Dr. Sarah Johnson",
-            email: credentials.identifier,
-            role: "lecturer",
-            staffId: "FEDPOFFA/STAFF/001",
-            department: "Petroleum Engineering",
-          }
-        : {
-            id: "1",
-            name: "John Doe",
-            email: "john.doe@student.fedpoffa.edu.ng",
-            role: "student",
-            studentId: credentials.identifier,
-            department: "Petroleum Engineering",
-            program: "HND Petroleum Engineering",
-            level: "200",
-          }
-
-      const token = "mock_jwt_token_" + Date.now()
-
-      localStorage.setItem("fedpoffa_token", token)
-      localStorage.setItem("fedpoffa_user", JSON.stringify(mockUser))
-
-      setUser(mockUser)
+      const user = response.user;
 
       // Redirect based on role
-      if (mockUser.role === "student") {
-        router.push("/dashboard/student")
-      } else if (mockUser.role === "lecturer") {
-        router.push("/dashboard/lecturer")
+      if (user?.role === "student") {
+        router.push("/dashboard/student");
+      } else if (user?.role === "lecturer") {
+        router.push("/dashboard/lecturer");
       } else {
-        router.push("/dashboard/admin")
+        router.push("/dashboard/admin");
       }
-    } catch (error) {
-      throw new Error("Invalid credentials")
-    } finally {
-      setLoading(false)
+    } catch (error: any) {
+      console.log("Login error:", error);
+      throw new Error(error?.message || "Invalid credentials");
     }
-  }
+  };
 
   const register = async (data: RegisterData) => {
-    setLoading(true)
     try {
-      // Mock API call - replace with actual FastAPI integration
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
       if (data.password !== data.confirmPassword) {
-        throw new Error("Passwords do not match")
+        throw new Error("Passwords do not match");
       }
 
-      // Mock successful registration
-      const mockUser: User = {
-        id: Date.now().toString(),
-        name: data.fullName,
+      await registerMutation.mutateAsync({
+        first_name: data.fullName.split(" ")[0] || "",
+        last_name: data.fullName.split(" ").slice(1).join(" ") || "",
+        middle_name: "",
         email: data.email,
+        matric_number: data.studentId,
+        password: data.password,
         role: "student",
-        studentId: data.studentId,
-        department: "Petroleum Engineering",
-        program: "HND Petroleum Engineering",
-        level: "100",
-      }
+        department_id: "default-dept-id", // This should come from a form
+        phone_number: "",
+      });
 
-      const token = "mock_jwt_token_" + Date.now()
-
-      localStorage.setItem("fedpoffa_token", token)
-      localStorage.setItem("fedpoffa_user", JSON.stringify(mockUser))
-
-      setUser(mockUser)
-      router.push("/dashboard/student")
+      router.push("/dashboard/student");
     } catch (error) {
-      throw error
-    } finally {
-      setLoading(false)
+      throw error;
     }
-  }
+  };
 
-  const logout = () => {
-    localStorage.removeItem("fedpoffa_token")
-    localStorage.removeItem("fedpoffa_user")
-    setUser(null)
-    router.push("/login")
-  }
+  const logout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+    } catch (error) {
+      // Still clear auth even if API call fails
+      clearAuth();
+    }
+    router.push("/login");
+  };
 
-  return <AuthContext.Provider value={{ user, login, register, logout, loading }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider
+      value={{
+        user: user as User | null,
+        login,
+        register,
+        logout,
+        loading:
+          loading ||
+          loginMutation.isPending ||
+          registerMutation.isPending ||
+          logoutMutation.isPending,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
+  return context;
 }

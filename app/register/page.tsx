@@ -1,17 +1,23 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import Link from "next/link"
-import { useAuth } from "@/components/providers/auth-provider"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { FedpoffaLogo } from "@/components/ui/fedpoffa-logo"
-import { LoadingSpinner } from "@/components/ui/loading-spinner"
-import { useToast } from "@/hooks/use-toast"
-import { Eye, EyeOff, CheckCircle, XCircle } from "lucide-react"
+import type React from "react";
+import { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/components/providers/auth-provider";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { FedpoffaLogo } from "@/components/ui/fedpoffa-logo";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useToast } from "@/hooks/use-toast";
+import { Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -20,61 +26,62 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { register } = useAuth()
-  const { toast } = useToast()
+  const { register } = useAuth();
+  const { toast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
-    }))
-  }
+    }));
+  };
 
   const validatePassword = (password: string) => {
-    const minLength = password.length >= 8
-    const hasUpper = /[A-Z]/.test(password)
-    const hasLower = /[a-z]/.test(password)
-    const hasNumber = /\d/.test(password)
+    const minLength = password.length >= 8;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
 
-    return { minLength, hasUpper, hasLower, hasNumber }
-  }
+    return { minLength, hasUpper, hasLower, hasNumber };
+  };
 
-  const passwordValidation = validatePassword(formData.password)
-  const isPasswordValid = Object.values(passwordValidation).every(Boolean)
+  const passwordValidation = validatePassword(formData.password);
+  const isPasswordValid = Object.values(passwordValidation).every(Boolean);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
     try {
       if (!isPasswordValid) {
-        throw new Error("Password does not meet requirements")
+        throw new Error("Password does not meet requirements");
       }
 
       if (formData.password !== formData.confirmPassword) {
-        throw new Error("Passwords do not match")
+        throw new Error("Passwords do not match");
       }
 
-      await register(formData)
+      await register(formData);
       toast({
         title: "Registration Successful",
         description: "Welcome to FEDPOFFA CBT Portal!",
-      })
+      });
     } catch (error) {
       toast({
         title: "Registration Failed",
-        description: error instanceof Error ? error.message : "Please try again.",
+        description:
+          error instanceof Error ? error.message : "Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-fedpoffa-purple/10 via-fedpoffa-orange/5 to-fedpoffa-green/10 flex items-center justify-center p-4">
@@ -102,7 +109,9 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="studentId">Student ID / Matriculation Number</Label>
+              <Label htmlFor="studentId">
+                Student ID / Matriculation Number
+              </Label>
               <Input
                 id="studentId"
                 name="studentId"
@@ -152,27 +161,59 @@ export default function RegisterPage() {
               {formData.password && (
                 <div className="text-xs space-y-1 mt-2">
                   <div
-                    className={`flex items-center gap-1 ${passwordValidation.minLength ? "text-fedpoffa-green" : "text-red-500"}`}
+                    className={`flex items-center gap-1 ${
+                      passwordValidation.minLength
+                        ? "text-fedpoffa-green"
+                        : "text-red-500"
+                    }`}
                   >
-                    {passwordValidation.minLength ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                    {passwordValidation.minLength ? (
+                      <CheckCircle size={12} />
+                    ) : (
+                      <XCircle size={12} />
+                    )}
                     At least 8 characters
                   </div>
                   <div
-                    className={`flex items-center gap-1 ${passwordValidation.hasUpper ? "text-fedpoffa-green" : "text-red-500"}`}
+                    className={`flex items-center gap-1 ${
+                      passwordValidation.hasUpper
+                        ? "text-fedpoffa-green"
+                        : "text-red-500"
+                    }`}
                   >
-                    {passwordValidation.hasUpper ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                    {passwordValidation.hasUpper ? (
+                      <CheckCircle size={12} />
+                    ) : (
+                      <XCircle size={12} />
+                    )}
                     One uppercase letter
                   </div>
                   <div
-                    className={`flex items-center gap-1 ${passwordValidation.hasLower ? "text-fedpoffa-green" : "text-red-500"}`}
+                    className={`flex items-center gap-1 ${
+                      passwordValidation.hasLower
+                        ? "text-fedpoffa-green"
+                        : "text-red-500"
+                    }`}
                   >
-                    {passwordValidation.hasLower ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                    {passwordValidation.hasLower ? (
+                      <CheckCircle size={12} />
+                    ) : (
+                      <XCircle size={12} />
+                    )}
                     One lowercase letter
                   </div>
                   <div
-                    className={`flex items-center gap-1 ${passwordValidation.hasNumber ? "text-fedpoffa-green" : "text-red-500"}`}
+                    className={`flex items-center gap-1 ${
+                      passwordValidation.hasNumber
+                        ? "text-fedpoffa-green"
+                        : "text-red-500"
+                    }`}
                   >
-                    {passwordValidation.hasNumber ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                    {passwordValidation.hasNumber ? (
+                      <CheckCircle size={12} />
+                    ) : (
+                      <XCircle size={12} />
+                    )}
                     One number
                   </div>
                 </div>
@@ -197,21 +238,30 @@ export default function RegisterPage() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showConfirmPassword ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
                 </button>
               </div>
-              {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                <p className="text-xs text-red-500 flex items-center gap-1">
-                  <XCircle size={12} />
-                  Passwords do not match
-                </p>
-              )}
+              {formData.confirmPassword &&
+                formData.password !== formData.confirmPassword && (
+                  <p className="text-xs text-red-500 flex items-center gap-1">
+                    <XCircle size={12} />
+                    Passwords do not match
+                  </p>
+                )}
             </div>
 
             <Button
               type="submit"
               className="w-full bg-fedpoffa-purple hover:bg-fedpoffa-purple/90"
-              disabled={isLoading || !isPasswordValid || formData.password !== formData.confirmPassword}
+              disabled={
+                isLoading ||
+                !isPasswordValid ||
+                formData.password !== formData.confirmPassword
+              }
             >
               {isLoading ? (
                 <>
@@ -227,17 +277,20 @@ export default function RegisterPage() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
-              <Link href="/login" className="text-fedpoffa-purple hover:underline font-medium">
+              <Link
+                href="/login"
+                className="text-fedpoffa-purple hover:underline font-medium"
+              >
                 Sign in here
               </Link>
             </p>
           </div>
 
           <div className="mt-4 text-center">
-            <p className="text-xs text-gray-500">Federal Polytechnic of Oil and Gas, Bonny</p>
+            <p className="text-xs text-gray-500">Federal Polytechnic Offa</p>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
