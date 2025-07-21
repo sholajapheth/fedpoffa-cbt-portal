@@ -6,6 +6,7 @@ import type {
   LoginRequest,
   RegisterRequest,
   RefreshTokenRequest,
+  ChangePasswordRequest,
 } from "./types";
 
 // Auth mutations
@@ -113,4 +114,57 @@ export const useAuthStatus = () => {
     user,
     accessToken,
   };
+};
+
+// Additional auth mutations
+export const useVerifyEmail = () => {
+  return useMutation({
+    mutationFn: (token: string) => AuthService.verifyEmail(token),
+    onError: (error) => {
+      console.error("Email verification failed:", error);
+    },
+  });
+};
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: (data: ChangePasswordRequest) =>
+      AuthService.changePassword(data),
+    onError: (error) => {
+      console.error("Password change failed:", error);
+    },
+  });
+};
+
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationFn: (email: string) => AuthService.forgotPassword(email),
+    onError: (error) => {
+      console.error("Forgot password failed:", error);
+    },
+  });
+};
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: ({
+      token,
+      newPassword,
+    }: {
+      token: string;
+      newPassword: string;
+    }) => AuthService.resetPassword(token, newPassword),
+    onError: (error) => {
+      console.error("Password reset failed:", error);
+    },
+  });
+};
+
+export const useResendVerification = () => {
+  return useMutation({
+    mutationFn: (email: string) => AuthService.resendVerification(email),
+    onError: (error) => {
+      console.error("Resend verification failed:", error);
+    },
+  });
 };

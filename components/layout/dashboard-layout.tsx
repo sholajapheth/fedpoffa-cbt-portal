@@ -17,6 +17,9 @@ import {
   User,
   LogOut,
   Users,
+  Settings,
+  Building2,
+  GraduationCap,
 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -31,9 +34,35 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   // Redirect if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push("/login");
+      router.push("/auth/login");
     }
   }, [isAuthenticated, isLoading, router]);
+
+  // Role-based access control
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user) {
+      const currentPath =
+        typeof window !== "undefined" ? window.location.pathname : "";
+
+      // Check if user is on the correct dashboard for their role
+      if (
+        user.role === "student" &&
+        !currentPath.startsWith("/dashboard/student")
+      ) {
+        router.push("/dashboard/student");
+      } else if (
+        user.role === "lecturer" &&
+        !currentPath.startsWith("/dashboard/lecturer")
+      ) {
+        router.push("/dashboard/lecturer");
+      } else if (
+        user.role === "admin" &&
+        !currentPath.startsWith("/dashboard/admin")
+      ) {
+        router.push("/dashboard/admin");
+      }
+    }
+  }, [user, isAuthenticated, isLoading, router]);
 
   // Show loading state
   if (isLoading) {
@@ -89,6 +118,41 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         },
         { name: "Students", href: "/dashboard/lecturer/students", icon: Users },
         { name: "Profile", href: "/dashboard/lecturer/profile", icon: User },
+        {
+          name: "Courses",
+          href: "/dashboard/lecturer/courses",
+          icon: BookOpen,
+        },
+      ];
+    } else if (user?.role === "admin") {
+      return [
+        { name: "Dashboard", href: "/dashboard/admin", icon: Home },
+        {
+          name: "All Courses",
+          href: "/dashboard/admin/courses",
+          icon: BookOpen,
+        },
+        {
+          name: "Departments",
+          href: "/dashboard/admin/departments",
+          icon: Building2,
+        },
+        {
+          name: "Programs",
+          href: "/dashboard/admin/programs",
+          icon: GraduationCap,
+        },
+        {
+          name: "All Users",
+          href: "/dashboard/admin/users",
+          icon: Users,
+        },
+        {
+          name: "System Settings",
+          href: "/dashboard/admin/settings",
+          icon: Settings,
+        },
+        { name: "Profile", href: "/dashboard/admin/profile", icon: User },
       ];
     }
     return [];
@@ -162,7 +226,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               // Handle logout
               localStorage.removeItem("accessToken");
               localStorage.removeItem("refreshToken");
-              router.push("/login");
+              router.push("/auth/login");
             }}
             className="w-full"
           >

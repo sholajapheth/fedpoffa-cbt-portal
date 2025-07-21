@@ -1,17 +1,10 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { AUTH_CONFIG } from "@/lib/config";
+import { User } from "@/lib/api/auth/types";
 
-// Types for authentication state
-export interface User {
-  id: string;
-  full_name: string;
-  email: string;
-  matric_number: string;
-  role: "student" | "lecturer" | "admin";
-  department_id: string;
-  is_verified: boolean;
-}
+// Re-export the User type from auth types
+export type { User };
 
 export interface AuthState {
   // State

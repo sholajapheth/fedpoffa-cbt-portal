@@ -29,24 +29,34 @@ export default function LecturerDashboard() {
   const { user, isAuthenticated, isLoading } = useAuthWithFeedback();
   const { data: profile, isLoading: profileLoading } = useUserProfile();
 
-  // Redirect if not authenticated
+  // Role-based access control
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push("/login");
+    if (!isLoading && isAuthenticated && user) {
+      // Ensure user is a lecturer
+      if (user.role !== "lecturer") {
+        // Redirect to appropriate dashboard based on role
+        if (user.role === "student") {
+          router.push("/dashboard/student");
+        } else if (user.role === "admin") {
+          router.push("/dashboard/admin");
+        } else {
+          router.push("/auth/login");
+        }
+      }
+    } else if (!isLoading && !isAuthenticated) {
+      router.push("/auth/login");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, user, router]);
 
   // Show loading state
   if (isLoading || profileLoading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fedpoffa-purple mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading dashboard...</p>
-          </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fedpoffa-purple mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
@@ -165,257 +175,246 @@ export default function LecturerDashboard() {
   ];
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/20 rounded-lg p-6">
-          <h1 className="text-2xl font-bold mb-2 text-foreground">
-            Welcome back, {user?.full_name || "Lecturer"}!
-          </h1>
-          <p className="text-muted-foreground">
-            Federal Polytechnic Offa - Lecturer Dashboard
+    <div className="space-y-6">
+      {/* Welcome Section */}
+      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/20 rounded-lg p-6">
+        <h1 className="text-2xl font-bold mb-2 text-foreground">
+          Welcome back, {user?.full_name || "Lecturer"}!
+        </h1>
+        <p className="text-muted-foreground">
+          Federal Polytechnic Offa - Lecturer Dashboard
+        </p>
+        {user && (
+          <p className="text-muted-foreground text-sm mt-2">
+            {user.department_name} • {user.role} • {user.id}
           </p>
-          {profile && (
-            <p className="text-muted-foreground text-sm mt-2">
-              {profile.department_id} • {profile.role} • {profile.id}
-            </p>
-          )}
-        </div>
+        )}
+      </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Button className="h-16 bg-fedpoffa-purple hover:bg-fedpoffa-purple/90">
-            <PlusCircle className="mr-2 h-5 w-5" />
-            Create New Test
-          </Button>
-          <Button className="h-16 bg-fedpoffa-orange hover:bg-fedpoffa-orange/90">
-            <FileText className="mr-2 h-5 w-5" />
-            Create Assignment
-          </Button>
-          <Button className="h-16 bg-fedpoffa-green hover:bg-fedpoffa-green/90">
-            <GraduationCap className="mr-2 h-5 w-5" />
-            Create Exam
-          </Button>
-        </div>
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Button className="h-16 bg-fedpoffa-purple hover:bg-fedpoffa-purple/90">
+          <PlusCircle className="mr-2 h-5 w-5" />
+          Create New Test
+        </Button>
+        <Button className="h-16 bg-fedpoffa-orange hover:bg-fedpoffa-orange/90">
+          <FileText className="mr-2 h-5 w-5" />
+          Create Assignment
+        </Button>
+        <Button className="h-16 bg-fedpoffa-green hover:bg-fedpoffa-green/90">
+          <GraduationCap className="mr-2 h-5 w-5" />
+          Create Exam
+        </Button>
+      </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
-            <Card key={index}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">
-                      {stat.title}
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {stat.value}
-                    </p>
-                    <p className="text-xs text-gray-500">{stat.description}</p>
-                  </div>
-                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <Card key={index}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    {stat.title}
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stat.value}
+                  </p>
+                  <p className="text-xs text-gray-500">{stat.description}</p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Assessments */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Recent Assessments
-              </CardTitle>
-              <CardDescription>
-                Your recently created assessments
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentAssessments.map((assessment) => (
-                  <div
-                    key={assessment.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
-                  >
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">
-                        {assessment.title}
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        {assessment.course} • {assessment.students} students
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Ends: {assessment.endDate}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant={
-                          assessment.status === "active"
-                            ? "default"
-                            : assessment.status === "grading"
-                            ? "destructive"
-                            : "secondary"
-                        }
-                        className={
-                          assessment.status === "active"
-                            ? "bg-fedpoffa-green"
-                            : assessment.status === "grading"
-                            ? "bg-fedpoffa-orange"
-                            : "bg-gray-500"
-                        }
-                      >
-                        {assessment.status}
-                      </Badge>
-                      <Button size="sm" variant="outline">
-                        View
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                <stat.icon className={`h-8 w-8 ${stat.color}`} />
               </div>
-              <Button variant="outline" className="w-full mt-4 bg-transparent">
-                View All Assessments
-              </Button>
             </CardContent>
           </Card>
+        ))}
+      </div>
 
-          {/* Pending Grading */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-fedpoffa-orange" />
-                Pending Grading
-              </CardTitle>
-              <CardDescription>
-                Theory questions awaiting your review
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {pendingGrading.map((item, index) => (
-                  <div
-                    key={index}
-                    className="p-3 border rounded-lg bg-fedpoffa-orange/5"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-gray-900">
-                        {item.assessment}
-                      </h4>
-                      <Badge
-                        variant="destructive"
-                        className="bg-fedpoffa-orange"
-                      >
-                        {item.pending} pending
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      {item.course} • {item.submissions} submissions
-                    </p>
-                    <p className="text-xs text-gray-500">Due: {item.dueDate}</p>
-                    <Button
-                      size="sm"
-                      className="mt-2 bg-fedpoffa-orange hover:bg-fedpoffa-orange/90"
-                    >
-                      Start Grading
-                    </Button>
-                  </div>
-                ))}
-              </div>
-              <Button variant="outline" className="w-full mt-4 bg-transparent">
-                View All Pending
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Courses Overview */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Assessments */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              My Courses
+              <FileText className="h-5 w-5" />
+              Recent Assessments
             </CardTitle>
-            <CardDescription>
-              Courses you are teaching this semester
-            </CardDescription>
+            <CardDescription>Your recently created assessments</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {courses.map((course, index) => (
+            <div className="space-y-4">
+              {recentAssessments.map((assessment) => (
                 <div
-                  key={index}
-                  className="p-4 border rounded-lg hover:bg-gray-50"
+                  key={assessment.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-gray-900">{course.code}</h4>
-                    <Badge variant="secondary">
-                      {course.students} students
-                    </Badge>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">
+                      {assessment.title}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      {assessment.course} • {assessment.students} students
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Ends: {assessment.endDate}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-600 mb-1">{course.name}</p>
-                  <p className="text-xs text-gray-500 mb-3">
-                    {course.department}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">
-                      {course.assessments} assessments
-                    </span>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={
+                        assessment.status === "active"
+                          ? "default"
+                          : assessment.status === "grading"
+                          ? "destructive"
+                          : "secondary"
+                      }
+                      className={
+                        assessment.status === "active"
+                          ? "bg-fedpoffa-green"
+                          : assessment.status === "grading"
+                          ? "bg-fedpoffa-orange"
+                          : "bg-gray-500"
+                      }
+                    >
+                      {assessment.status}
+                    </Badge>
                     <Button size="sm" variant="outline">
-                      Manage
+                      View
                     </Button>
                   </div>
                 </div>
               ))}
             </div>
+            <Button variant="outline" className="w-full mt-4 bg-transparent">
+              View All Assessments
+            </Button>
           </CardContent>
         </Card>
 
-        {/* Student Analytics Preview */}
+        {/* Pending Grading */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Student Performance Overview
+              <AlertCircle className="h-5 w-5 text-fedpoffa-orange" />
+              Pending Grading
             </CardTitle>
             <CardDescription>
-              Quick insights into student performance
+              Theory questions awaiting your review
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-fedpoffa-green/10 rounded-lg">
-                <h4 className="font-medium text-fedpoffa-green">
-                  Average Score
-                </h4>
-                <p className="text-2xl font-bold text-gray-900">78.5%</p>
-                <p className="text-xs text-gray-500">Across all assessments</p>
-              </div>
-              <div className="p-4 bg-fedpoffa-orange/10 rounded-lg">
-                <h4 className="font-medium text-fedpoffa-orange">
-                  Completion Rate
-                </h4>
-                <p className="text-2xl font-bold text-gray-900">94.2%</p>
-                <p className="text-xs text-gray-500">
-                  Students completing on time
-                </p>
-              </div>
-              <div className="p-4 bg-fedpoffa-purple/10 rounded-lg">
-                <h4 className="font-medium text-fedpoffa-purple">
-                  Top Performer
-                </h4>
-                <p className="text-lg font-bold text-gray-900">PET 201</p>
-                <p className="text-xs text-gray-500">Highest average score</p>
-              </div>
+            <div className="space-y-4">
+              {pendingGrading.map((item, index) => (
+                <div
+                  key={index}
+                  className="p-3 border rounded-lg bg-fedpoffa-orange/5"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-gray-900">
+                      {item.assessment}
+                    </h4>
+                    <Badge variant="destructive" className="bg-fedpoffa-orange">
+                      {item.pending} pending
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {item.course} • {item.submissions} submissions
+                  </p>
+                  <p className="text-xs text-gray-500">Due: {item.dueDate}</p>
+                  <Button
+                    size="sm"
+                    className="mt-2 bg-fedpoffa-orange hover:bg-fedpoffa-orange/90"
+                  >
+                    Start Grading
+                  </Button>
+                </div>
+              ))}
             </div>
             <Button variant="outline" className="w-full mt-4 bg-transparent">
-              View Detailed Analytics
+              View All Pending
             </Button>
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+
+      {/* Courses Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5" />
+            My Courses
+          </CardTitle>
+          <CardDescription>
+            Courses you are teaching this semester
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {courses.map((course, index) => (
+              <div
+                key={index}
+                className="p-4 border rounded-lg hover:bg-gray-50"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-gray-900">{course.code}</h4>
+                  <Badge variant="secondary">{course.students} students</Badge>
+                </div>
+                <p className="text-sm text-gray-600 mb-1">{course.name}</p>
+                <p className="text-xs text-gray-500 mb-3">
+                  {course.department}
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500">
+                    {course.assessments} assessments
+                  </span>
+                  <Button size="sm" variant="outline">
+                    Manage
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Student Analytics Preview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Student Performance Overview
+          </CardTitle>
+          <CardDescription>
+            Quick insights into student performance
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-fedpoffa-green/10 rounded-lg">
+              <h4 className="font-medium text-fedpoffa-green">Average Score</h4>
+              <p className="text-2xl font-bold text-gray-900">78.5%</p>
+              <p className="text-xs text-gray-500">Across all assessments</p>
+            </div>
+            <div className="p-4 bg-fedpoffa-orange/10 rounded-lg">
+              <h4 className="font-medium text-fedpoffa-orange">
+                Completion Rate
+              </h4>
+              <p className="text-2xl font-bold text-gray-900">94.2%</p>
+              <p className="text-xs text-gray-500">
+                Students completing on time
+              </p>
+            </div>
+            <div className="p-4 bg-fedpoffa-purple/10 rounded-lg">
+              <h4 className="font-medium text-fedpoffa-purple">
+                Top Performer
+              </h4>
+              <p className="text-lg font-bold text-gray-900">PET 201</p>
+              <p className="text-xs text-gray-500">Highest average score</p>
+            </div>
+          </div>
+          <Button variant="outline" className="w-full mt-4 bg-transparent">
+            View Detailed Analytics
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

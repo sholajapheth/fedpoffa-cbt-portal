@@ -10,20 +10,9 @@ import {
   useLogout,
   useUserProfile,
 } from "@/lib/api/auth/hooks";
+import { User } from "@/lib/api/auth/types";
 
 export type UserRole = "student" | "lecturer" | "admin" | "it_admin";
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  studentId?: string;
-  staffId?: string;
-  department?: string;
-  program?: string;
-  level?: string;
-}
 
 interface AuthContextType {
   user: User | null;
@@ -62,17 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logoutMutation = useLogout();
 
   useEffect(() => {
-    // Check for existing session
-    if (accessToken && user) {
-      // User is authenticated, redirect to appropriate dashboard
-      if (user.role === "student") {
-        router.push("/dashboard/student");
-      } else if (user.role === "lecturer") {
-        router.push("/dashboard/lecturer");
-      } else {
-        router.push("/dashboard/admin");
-      }
-    }
+    // Check for existing session - but don't auto-redirect
+    // Let individual pages handle their own routing
     setLoading(false);
   }, [user, accessToken, router]);
 
@@ -130,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Still clear auth even if API call fails
       clearAuth();
     }
-    router.push("/login");
+    router.push("/auth/login");
   };
 
   return (

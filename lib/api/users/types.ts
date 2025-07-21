@@ -1,29 +1,8 @@
 // User API Types
+import { User } from "@/lib/api/auth/types";
 
-// Base User Interface
-export interface User {
-  id: string;
-  first_name: string;
-  last_name: string;
-  middle_name?: string;
-  full_name: string;
-  email: string;
-  matric_number: string;
-  phone_number?: string;
-  role: string;
-  department_id: string;
-  department_name?: string;
-  level?: string;
-  profile_picture?: string;
-  bio?: string;
-  is_active: boolean;
-  is_verified: boolean;
-  created_at: string;
-  updated_at: string;
-  last_login?: string;
-  enrolled_courses_count?: number;
-  completed_assessments_count?: number;
-}
+// Re-export the User type from auth types to maintain consistency
+export type { User };
 
 // User Enrollment Interface
 export interface UserEnrollment {

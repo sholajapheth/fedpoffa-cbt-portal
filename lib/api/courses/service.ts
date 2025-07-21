@@ -1,92 +1,84 @@
-import { createAxiosInstance, handleApiError } from "@/lib/api/axios-config";
-import type {
+import { apiClient } from "@/lib/api/client";
+import {
   Course,
   CreateCourseRequest,
   UpdateCourseRequest,
   CourseListResponse,
-  CourseError,
+  CourseDetail,
+  CourseEnrollmentRequest,
+  CourseEnrollment,
+  CourseStats,
+  StudentCourseListResponse,
+  LecturerCourseListResponse,
+  GetCoursesParams,
+  GetMyEnrolledCoursesParams,
+  GetMyCoordinatedCoursesParams,
 } from "./types";
 
-// Create course-specific axios instance with custom configuration
-const courseApi = createAxiosInstance({
-  // Course-specific configuration can be added here
-  headers: {
-    "X-Service": "courses", // Custom header to identify course service
+// Course Service
+export const courseService = {
+  // Get all courses (Admin/Lecturer)
+  getCourses: async (
+    params?: GetCoursesParams
+  ): Promise<CourseListResponse> => {
+    const response = await apiClient.get("/courses/", { params });
+    return response.data;
   },
-});
 
-// Course API service
-export class CourseService {
-  static async getCourses(
-    page: number = 1,
-    limit: number = 10
-  ): Promise<CourseListResponse> {
-    try {
-      const response = await courseApi.get<CourseListResponse>("/courses", {
-        params: { page, limit },
-      });
-      return response.data;
-    } catch (error: any) {
-      throw this.handleError(error);
-    }
-  }
+  // Get course by ID
+  getCourse: async (courseId: string): Promise<CourseDetail> => {
+    const response = await apiClient.get(`/courses/${courseId}`);
+    return response.data;
+  },
 
-  static async getCourse(id: string): Promise<Course> {
-    try {
-      const response = await courseApi.get<Course>(`/courses/${id}`);
-      return response.data;
-    } catch (error: any) {
-      throw this.handleError(error);
-    }
-  }
+  // Create course (Admin only)
+  createCourse: async (data: CreateCourseRequest): Promise<Course> => {
+    const response = await apiClient.post("/courses/", data);
+    return response.data;
+  },
 
-  static async createCourse(data: CreateCourseRequest): Promise<Course> {
-    try {
-      const response = await courseApi.post<Course>("/courses", data);
-      return response.data;
-    } catch (error: any) {
-      throw this.handleError(error);
-    }
-  }
-
-  static async updateCourse(
-    id: string,
+  // Update course (Admin only)
+  updateCourse: async (
+    courseId: string,
     data: UpdateCourseRequest
-  ): Promise<Course> {
-    try {
-      const response = await courseApi.put<Course>(`/courses/${id}`, data);
-      return response.data;
-    } catch (error: any) {
-      throw this.handleError(error);
-    }
-  }
+  ): Promise<Course> => {
+    const response = await apiClient.put(`/courses/${courseId}`, data);
+    return response.data;
+  },
 
-  static async deleteCourse(id: string): Promise<void> {
-    try {
-      await courseApi.delete(`/courses/${id}`);
-    } catch (error: any) {
-      throw this.handleError(error);
-    }
-  }
+  // Delete course (Admin only)
+  deleteCourse: async (courseId: string): Promise<void> => {
+    await apiClient.delete(`/courses/${courseId}`);
+  },
 
-  static async enrollCourse(id: string): Promise<Course> {
-    try {
-      const response = await courseApi.post<Course>(`/courses/${id}/enroll`);
-      return response.data;
-    } catch (error: any) {
-      throw this.handleError(error);
-    }
-  }
+  // Enroll in course (Student)
+  enrollInCourse: async (
+    courseId: string,
+    data: CourseEnrollmentRequest
+  ): Promise<CourseEnrollment> => {
+    const response = await apiClient.post(`/courses/${courseId}/enroll`, data);
+    return response.data;
+  },
 
-  static async unenrollCourse(id: string): Promise<void> {
-    try {
-      await courseApi.delete(`/courses/${id}/enroll`);
-    } catch (error: any) {
-      throw this.handleError(error);
-    }
-  }
+  // Get course stats (Admin only)
+  getCourseStats: async (): Promise<CourseStats> => {
+    const response = await apiClient.get("/courses/stats/overview");
+    return response.data;
+  },
 
-  private static handleError(error: any): CourseError {
-    return handleApiError(error);
-  }
-}
+  // Get my enrolled courses (Student)
+  getMyEnrolledCourses: async (
+    params?: GetMyEnrolledCoursesParams
+  ): Promise<StudentCourseListResponse> => {
+    const response = await apiClient.get("/courses/my/enrolled", { params });
+    return response.data;
+  },
+
+  // Get my coordinated courses (Lecturer)
+  getMyCoordinatedCourses: async (
+    params?: GetMyCoordinatedCoursesParams
+  ): Promise<LecturerCourseListResponse> => {
+    const response = await apiClient.get("/courses/my/coordinated", { params });
+    return response.data;
+  },
+};

@@ -43,7 +43,7 @@
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted-foreground: 215 20.2% 85%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
@@ -118,7 +118,20 @@
 
   /* Improved Text Contrast */
   .dark .text-muted-foreground {
+    color: hsl(215 20.2% 90%);
+  }
+
+  /* Enhanced Text Visibility for Dark Mode */
+  .dark .text-gray-600 {
+    color: hsl(215 20.2% 85%);
+  }
+
+  .dark .text-gray-500 {
     color: hsl(215 20.2% 75%);
+  }
+
+  .dark .text-gray-900 {
+    color: hsl(210 40% 98%);
   }
 
   /* Better Hover States for Dark Mode */
@@ -128,5 +141,31 @@
 
   .dark .hover\:text-accent-foreground:hover {
     color: hsl(210 40% 98%);
+  }
+
+  /* Enhanced Card and Component Visibility */
+  .dark .bg-gray-50 {
+    background-color: hsl(217.2 32.6% 15%);
+  }
+
+  .dark .border {
+    border-color: hsl(217.2 32.6% 25%);
+  }
+
+  /* Better Button and Badge Visibility */
+  .dark .bg-transparent {
+    background-color: transparent;
+  }
+
+  .dark .bg-fedpoffa-green\/10 {
+    background-color: hsl(142 76% 36% / 0.2);
+  }
+
+  .dark .bg-fedpoffa-orange\/10 {
+    background-color: hsl(38 92% 50% / 0.2);
+  }
+
+  .dark .bg-fedpoffa-purple\/10 {
+    background-color: hsl(262 83% 58% / 0.2);
   }
 }

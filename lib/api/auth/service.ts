@@ -6,6 +6,12 @@ import type {
   RefreshTokenRequest,
   RefreshTokenResponse,
   AuthError,
+  VerifyEmailRequest,
+  ChangePasswordRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  ResendVerificationRequest,
+  AuthResponse,
 } from "./types";
 
 // Create auth-specific axios instance with custom configuration
@@ -64,6 +70,74 @@ export class AuthService {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
       }
+    }
+  }
+
+  // Email verification
+  static async verifyEmail(token: string): Promise<AuthResponse> {
+    try {
+      const response = await authApi.post<AuthResponse>(
+        `/auth/verify-email?token=${encodeURIComponent(token)}`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Change password
+  static async changePassword(
+    data: ChangePasswordRequest
+  ): Promise<AuthResponse> {
+    try {
+      const response = await authApi.post<AuthResponse>(
+        "/auth/change-password",
+        data
+      );
+      return response.data;
+    } catch (error: any) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Forgot password
+  static async forgotPassword(email: string): Promise<AuthResponse> {
+    try {
+      const response = await authApi.post<AuthResponse>(
+        `/auth/forgot-password?email=${encodeURIComponent(email)}`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Reset password
+  static async resetPassword(
+    token: string,
+    newPassword: string
+  ): Promise<AuthResponse> {
+    try {
+      const response = await authApi.post<AuthResponse>(
+        `/auth/reset-password?token=${encodeURIComponent(
+          token
+        )}&new_password=${encodeURIComponent(newPassword)}`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Resend verification email
+  static async resendVerification(email: string): Promise<AuthResponse> {
+    try {
+      const response = await authApi.post<AuthResponse>(
+        `/auth/resend-verification?email=${encodeURIComponent(email)}`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw this.handleError(error);
     }
   }
 
